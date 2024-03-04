@@ -6,6 +6,8 @@
     <title>&lt;my-element> Demo</title>
     <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../node_modules/lit/polyfill-support.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle-min.js">
+    </script>
     <script type="module" src="../my-element.js"></script>
     <style>
       p {
@@ -15,8 +17,30 @@
     </style>
   </head>
   <body>
-    <my-element>
-      <p>This is child content</p>
-    </my-element>
+    <speech-to-text>
+      <button id="start-button">Start</button>
+      <button id="stop-button">Stop</button>
+    </speech-to-text>
+
+    <script type="module">
+      document.querySelector('#start-button').addEventListener('click', startRecording);
+      document.querySelector('#stop-button').addEventListener('click', stopRecording);
+
+      const speechToText = document.querySelector('speech-to-text');
+
+      speechToText.addEventListener('recognized', (e) => {
+        console.log('recognized', e.detail);
+      });
+
+      function startRecording() {
+        console.log('startRecording');
+        speechToText.startSpeechToText();
+      }
+
+      function stopRecording() {
+        console.log('stopRecording');
+        speechToText.stopSpeechToText();
+      }
+    </script>
   </body>
 </html>
