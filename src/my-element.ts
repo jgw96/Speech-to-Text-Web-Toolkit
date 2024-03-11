@@ -9,12 +9,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 @customElement('speech-to-text')
 export class SpeechToText extends LitElement {
   static override styles = css`
-    :host {
-      display: block;
-      border: solid 1px gray;
-      padding: 16px;
-      max-width: 800px;
-    }
+    
   `;
 
   @property({ type: String }) apiKey = 'a3484733425e4929ae1da1f90a5f0a16';
@@ -131,23 +126,33 @@ export class SpeechToText extends LitElement {
   }
 
   public async startSpeechToText() {
-    this.recog!.startContinuousRecognitionAsync();
+    try {
+      this.recog!.startContinuousRecognitionAsync();
 
-    this.dispatchEvent(new CustomEvent('transcribe-started', {
-      detail: {
-        message: 'Speech to text started'
-      }
-    }));
+      this.dispatchEvent(new CustomEvent('transcribe-started', {
+        detail: {
+          message: 'Speech to text started'
+        }
+      }));
+    }
+    catch (err) {
+      console.error(`Error starting transcription: ${err}`);
+    }
   }
 
   public async stopSpeechToText() {
-    this.recog!.stopContinuousRecognitionAsync();
+    try {
+      this.recog!.stopContinuousRecognitionAsync();
 
-    this.dispatchEvent(new CustomEvent('transcribe-stopped', {
-      detail: {
-        message: 'Speech to text stopped'
-      }
-    }));
+      this.dispatchEvent(new CustomEvent('transcribe-stopped', {
+        detail: {
+          message: 'Speech to text stopped'
+        }
+      }));
+    }
+    catch (err) {
+      console.error(`Error stopping transcription: ${err}`);
+    }
   }
 }
 
