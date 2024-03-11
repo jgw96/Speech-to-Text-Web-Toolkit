@@ -12,9 +12,13 @@ export class SpeechToText extends LitElement {
     
   `;
 
+  // for azure speech recog library
   @property({ type: String }) apiKey = 'a3484733425e4929ae1da1f90a5f0a16';
   @property({ type: String }) region = 'eastus';
   @property({ type: String }) language = 'en-US';
+
+  // control props
+  @property({ type: String }) localOrCloud: "local" | "cloud" | "automatic" = "cloud";
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
@@ -30,6 +34,8 @@ export class SpeechToText extends LitElement {
   transcript: string | undefined = undefined;
   focusedLine: string | undefined = undefined;
 
+  recordedChunks: Blob[] = [];
+
   override render() {
     return html`
       <slot></slot>
@@ -37,16 +43,39 @@ export class SpeechToText extends LitElement {
   }
 
   override async firstUpdated() {
-    if (this.sdk) {
-      this.audioConfig = this.sdk.AudioConfig.fromDefaultMicrophoneInput();
-      this.speechConfig = this.sdk.SpeechConfig.fromSubscription(this.apiKey, this.region);
+    switch (this.localOrCloud) {
+      case "cloud":
+        if (this.sdk) {
+          this.audioConfig = this.sdk.AudioConfig.fromDefaultMicrophoneInput();
+          this.speechConfig = this.sdk.SpeechConfig.fromSubscription(this.apiKey, this.region);
 
-      this.speechConfig!.speechRecognitionLanguage = this.language;
-      this.speechConfig!.enableDictation();
+          this.speechConfig!.speechRecognitionLanguage = this.language;
+          this.speechConfig!.enableDictation();
 
-      this.recog = new this.sdk.SpeechRecognizer(this.speechConfig, this.audioConfig);
+          this.recog = new this.sdk.SpeechRecognizer(this.speechConfig, this.audioConfig);
 
-      await this.setUpListeners();
+          await this.setUpListeners();
+        }
+        break;
+      case "local":
+
+        break;
+      case "automatic":
+
+        break;
+      default:
+        if (this.sdk) {
+          this.audioConfig = this.sdk.AudioConfig.fromDefaultMicrophoneInput();
+          this.speechConfig = this.sdk.SpeechConfig.fromSubscription(this.apiKey, this.region);
+
+          this.speechConfig!.speechRecognitionLanguage = this.language;
+          this.speechConfig!.enableDictation();
+
+          this.recog = new this.sdk.SpeechRecognizer(this.speechConfig, this.audioConfig);
+
+          await this.setUpListeners();
+        }
+        break;
     }
   }
 
@@ -126,17 +155,55 @@ export class SpeechToText extends LitElement {
   }
 
   public async startSpeechToText() {
-    try {
-      this.recog!.startContinuousRecognitionAsync();
+    console.log("this.localOrCloud", this.localOrCloud)
+    if (this.localOrCloud === "cloud") {
+      try {
+        this.recog!.startContinuousRecognitionAsync();
 
-      this.dispatchEvent(new CustomEvent('transcribe-started', {
-        detail: {
-          message: 'Speech to text started'
-        }
-      }));
+        this.dispatchEvent(new CustomEvent('transcribe-started', {
+          detail: {
+            message: 'Speech to text started'
+          }
+        }));
+      }
+      catch (err) {
+        console.error(`Error starting transcription: ${err}`);
+      }
     }
-    catch (err) {
-      console.error(`Error starting transcription: ${err}`);
+    else if (this.localOrCloud === "local") {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: false,
+        audio: true
+      });
+      console.log("here 1");
+
+      let mime = 'audio/wav';
+
+      const options = { mimeType: mime };
+
+      const mediaRecorder = new MediaRecorder(stream, options);
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          this.recordedChunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const blob = new Blob(this.recordedChunks, { type: "audio/wav" });
+
+        const { doLocalWhisper } = await import('./services/ai');
+        const transcript = await doLocalWhisper(blob);
+
+        this.dispatchEvent(new CustomEvent('recognized', {
+          detail: {
+            message: transcript
+          }
+        }));
+      }
+
+
+      mediaRecorder.start(1000);
     }
   }
 
