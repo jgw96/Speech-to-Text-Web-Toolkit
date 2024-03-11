@@ -3,16 +3,15 @@
  * Copyright 2018 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-
-import summary from 'rollup-plugin-summary';
 import {terser} from 'rollup-plugin-terser';
 import resolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
+import webWorkerLoader from 'rollup-plugin-web-worker-loader';
 
 export default {
   input: 'my-element.js',
   output: {
-    file: 'my-element.bundled.js',
+    dir: 'dist',
     format: 'esm',
   },
   onwarn(warning) {
@@ -23,6 +22,9 @@ export default {
   plugins: [
     replace({'Reflect.decorate': 'undefined'}),
     resolve(),
+
+    webWorkerLoader(),
+
     /**
      * This minification setup serves the static site generation.
      * For bundling and minification, check the README.md file.
@@ -37,6 +39,5 @@ export default {
         },
       },
     }),
-    summary(),
   ],
 };

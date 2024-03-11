@@ -2,6 +2,9 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
+import { MediaRecorder as SpecialRecorder, register } from 'extendable-media-recorder';
+import { connect } from 'extendable-media-recorder-wav-encoder';
+
 /*
   TODO: Fix importing of speech-sdk, which would also fix types
 */
@@ -35,6 +38,7 @@ export class SpeechToText extends LitElement {
   focusedLine: string | undefined = undefined;
 
   recordedChunks: Blob[] = [];
+  mediaRecorder: MediaRecorder | undefined = undefined;
 
   override render() {
     return html`
@@ -175,21 +179,22 @@ export class SpeechToText extends LitElement {
         video: false,
         audio: true
       });
-      console.log("here 1");
 
       let mime = 'audio/wav';
 
       const options = { mimeType: mime };
 
-      const mediaRecorder = new MediaRecorder(stream, options);
+      await register(await connect());
 
-      mediaRecorder.ondataavailable = (event) => {
+      this.mediaRecorder = (new SpecialRecorder(stream, options) as any);
+
+      this.mediaRecorder!.ondataavailable = (event: any) => {
         if (event.data.size > 0) {
           this.recordedChunks.push(event.data);
         }
       };
 
-      mediaRecorder.onstop = async () => {
+      this.mediaRecorder!.onstop = async () => {
         const blob = new Blob(this.recordedChunks, { type: "audio/wav" });
 
         const { doLocalWhisper } = await import('./services/ai');
@@ -203,22 +208,27 @@ export class SpeechToText extends LitElement {
       }
 
 
-      mediaRecorder.start(1000);
+      this.mediaRecorder!.start(1000);
     }
   }
 
   public async stopSpeechToText() {
-    try {
-      this.recog!.stopContinuousRecognitionAsync();
+    if (this.localOrCloud === "cloud" && this.recog) {
+      try {
+        this.recog!.stopContinuousRecognitionAsync();
 
-      this.dispatchEvent(new CustomEvent('transcribe-stopped', {
-        detail: {
-          message: 'Speech to text stopped'
-        }
-      }));
+        this.dispatchEvent(new CustomEvent('transcribe-stopped', {
+          detail: {
+            message: 'Speech to text stopped'
+          }
+        }));
+      }
+      catch (err) {
+        console.error(`Error stopping transcription: ${err}`);
+      }
     }
-    catch (err) {
-      console.error(`Error stopping transcription: ${err}`);
+    else if (this.localOrCloud === "local") {
+      this.mediaRecorder!.stop();
     }
   }
 }

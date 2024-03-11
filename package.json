@@ -3,11 +3,14 @@
   "private": true,
   "version": "1.0.0",
   "description": "A web component that a developer can use to enable accurate speech-to-text, either locally or in the cloud, in their web-based application, including a WebView. ",
-  "main": "my-element.js",
-  "module": "my-element.js",
+  "main": "dist/speech-to-text-toolkit.js",
+  "module": "dist/speech-to-text-toolkit.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "dev-server": "vite --open",
+    "dev": "npm run dev-server",
+    "build": "vite build",
+    
     "build:watch": "tsc --watch",
     "clean": "rimraf my-element.{d.ts,d.ts.map,js,js.map} test/my-element.{d.ts,d.ts.map,js,js.map} test/my-element_test.{d.ts,d.ts.map,js,js.map}",
     "lint": "npm run lint:lit-analyzer && npm run lint:eslint",
@@ -42,6 +45,8 @@
   "license": "BSD-3-Clause",
   "dependencies": {
     "@xenova/transformers": "^2.16.0",
+    "extendable-media-recorder": "^9.1.11",
+    "extendable-media-recorder-wav-encoder": "^7.0.106",
     "lit": "^3.1.2",
     "microsoft-cognitiveservices-speech-sdk": "^1.32.0"
   },
@@ -65,7 +70,9 @@
     "rimraf": "^3.0.2",
     "rollup": "^2.73.0",
     "rollup-plugin-terser": "^7.0.2",
-    "typescript": "^5.4.2"
+    "rollup-plugin-web-worker-loader": "^1.6.1",
+    "typescript": "^5.4.2",
+    "vite": "^5.1.6"
   },
   "customElements": "custom-elements.json"
 }
