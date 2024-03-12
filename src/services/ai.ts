@@ -37,8 +37,6 @@ export function doLocalWhisper(audioFile: Blob) {
                 if (e.data.type === "transcribe") {
                     console.log("e.data.transcript", e.data.transcription)
 
-                    whisperWorker.terminate();
-
                     resolve(e.data.transcription);
                 }
             }

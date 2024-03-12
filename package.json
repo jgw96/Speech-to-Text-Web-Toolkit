@@ -9,7 +9,6 @@
     "dev-server": "vite --open",
     "dev": "npm run dev-server",
     "build": "vite build",
-    
     "build:watch": "tsc --watch",
     "clean": "rimraf my-element.{d.ts,d.ts.map,js,js.map} test/my-element.{d.ts,d.ts.map,js,js.map} test/my-element_test.{d.ts,d.ts.map,js,js.map}",
     "lint": "npm run lint:lit-analyzer && npm run lint:eslint",
@@ -43,7 +42,7 @@
   "author": "Justin Willis",
   "license": "BSD-3-Clause",
   "dependencies": {
-    "@xenova/transformers": "^2.16.0",
+    "@xenova/transformers": "github:xenova/transformers.js#v3",
     "extendable-media-recorder": "^9.1.11",
     "extendable-media-recorder-wav-encoder": "^7.0.106",
     "lit": "^3.1.2",
