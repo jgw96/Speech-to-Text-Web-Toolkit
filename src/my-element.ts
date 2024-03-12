@@ -67,7 +67,37 @@ export class SpeechToText extends LitElement {
           break;
         }
       case "automatic":
+        {
+          // no types for these APIs
 
+          // @ts-ignore
+          const deviceMemory = navigator.deviceMemory;
+          // @ts-ignore
+          const battery = await navigator.getBattery();
+          
+          const localCheck = deviceMemory && deviceMemory >= 4 && battery && battery.level > 0.5;
+
+          if (localCheck) {
+            const { loadTranscriber } = await import('./services/ai');
+            await loadTranscriber();
+          }
+          else {
+            if (this.sdk) {
+              this.audioConfig = this.sdk.AudioConfig.fromDefaultMicrophoneInput();
+              this.speechConfig = this.sdk.SpeechConfig.fromSubscription(this.apiKey, this.region);
+    
+              this.speechConfig!.speechRecognitionLanguage = this.language;
+              this.speechConfig!.enableDictation();
+    
+              this.recog = new this.sdk.SpeechRecognizer(this.speechConfig, this.audioConfig);
+    
+              await this.setUpListeners();
+            }
+            else {
+              throw new Error("could not set up speech recog as there is no SDK loaded")
+            }
+          }
+        }
         break;
       default:
         if (this.sdk) {

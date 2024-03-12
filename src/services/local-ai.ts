@@ -1,4 +1,6 @@
-let transcriber: any | undefined = undefined;
+import { AutomaticSpeechRecognitionPipeline } from '@xenova/transformers';
+
+let transcriber: AutomaticSpeechRecognitionPipeline | undefined = undefined;
 
 self.onmessage = async (e) => {
     if (e.data.type === 'transcribe') {
@@ -19,7 +21,7 @@ self.onmessage = async (e) => {
         return Promise.resolve();
     }
     else {
-        console.error('Unknown message type', e.data);
+        console.error('Unknown message type', e.data);s
         return Promise.reject('Unknown message type');
     }
 }
@@ -28,7 +30,6 @@ export async function loadTranscriber(): Promise<void> {
     return new Promise(async (resolve) => {
         if (!transcriber) {
             const { pipeline, env } = await import('@xenova/transformers');
-            // @ts-ignore
             env.allowLocalModels = false;
             transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-base.en');
 
@@ -40,7 +41,7 @@ export async function loadTranscriber(): Promise<void> {
     })
 }
 
-export async function localTranscribe(audio: any): Promise<string> {
+export async function localTranscribe(audio: Blob): Promise<string> {
     return new Promise(async (resolve) => {
         await loadTranscriber();
 
@@ -50,7 +51,6 @@ export async function localTranscribe(audio: any): Promise<string> {
             callback_function: callback_function, // after each generation step
             chunk_callback: chunk_callback, // after each chunk is processed
         });
-        console.log('output', output);
 
         resolve(output.text);
     })
