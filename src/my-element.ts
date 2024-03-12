@@ -4,6 +4,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 
 import { MediaRecorder as SpecialRecorder, register } from 'extendable-media-recorder';
 import { connect } from 'extendable-media-recorder-wav-encoder';
+import { loadTranscriber } from './services/ai';
 
 /*
   TODO: Fix importing of speech-sdk, which would also fix types
@@ -62,7 +63,7 @@ export class SpeechToText extends LitElement {
         }
         break;
       case "local":
-
+        await loadTranscriber();
         break;
       case "automatic":
 
@@ -180,7 +181,7 @@ export class SpeechToText extends LitElement {
         audio: true
       });
 
-      let mime = 'audio/wav';
+      const mime = 'audio/wav';
 
       const options = { mimeType: mime };
 

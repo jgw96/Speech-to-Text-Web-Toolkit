@@ -1,5 +1,14 @@
+let whisperWorker: Worker;
+
+export async function loadTranscriber(): Promise<void> {
+    whisperWorker = new Worker(new URL("./local-ai.ts", import.meta.url), { type: "module" });
+    whisperWorker.postMessage({
+        type: "load",
+    });
+}
+
 export function doLocalWhisper(audioFile: Blob) {
-    return new Promise(async (resolve) => {
+    return new Promise((resolve) => {
         const fileReader = new FileReader();
         fileReader.onloadend = async () => {
             const audioCTX = new AudioContext({
@@ -12,8 +21,8 @@ export function doLocalWhisper(audioFile: Blob) {
             if (audioData.numberOfChannels === 2) {
                 const SCALING_FACTOR = Math.sqrt(2);
 
-                let left = audioData.getChannelData(0);
-                let right = audioData.getChannelData(1);
+                const left = audioData.getChannelData(0);
+                const right = audioData.getChannelData(1);
 
                 audio = new Float32Array(left.length);
                 for (let i = 0; i < audioData.length; ++i) {
@@ -24,8 +33,6 @@ export function doLocalWhisper(audioFile: Blob) {
                 audio = audioData.getChannelData(0);
             }
 
-
-            const whisperWorker = new Worker(new URL("./local-ai.ts", import.meta.url), { type: "module" });
             whisperWorker.onmessage = async (e) => {
                 if (e.data.type === "transcribe") {
                     console.log("e.data.transcript", e.data.transcription)

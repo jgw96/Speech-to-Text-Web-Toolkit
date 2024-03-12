@@ -14,20 +14,31 @@ self.onmessage = async (e) => {
             })
         })
     }
+    else if (e.data.type === "load") {
+        await loadTranscriber();
+    }
     else {
         console.error('Unknown message type', e.data);
         return Promise.reject('Unknown message type');
     }
 }
 
-export async function localTranscribe(audio: any): Promise<string> {
+export async function loadTranscriber(): Promise<void> {
     return new Promise(async (resolve) => {
         if (!transcriber) {
             const { pipeline, env } = await import('@xenova/transformers');
             // @ts-ignore
             env.allowLocalModels = false;
             transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-base.en');
+
+            resolve();
         }
+    })
+}
+
+export async function localTranscribe(audio: any): Promise<string> {
+    return new Promise(async (resolve) => {
+        await loadTranscriber();
 
         const output = await transcriber(audio, {
             chunk_length_s: 30,
