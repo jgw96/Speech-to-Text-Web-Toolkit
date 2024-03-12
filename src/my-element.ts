@@ -148,7 +148,6 @@ export class SpeechToText extends LitElement {
       };
 
       this.recog.sessionStopped = async (s?: any, e?: any) => {
-        console.log("\n    Session stopped event.", s, e);
         await this.recog!.stopContinuousRecognitionAsync();
 
         this.dispatchEvent(new CustomEvent('transcribe-stopped', {
@@ -161,7 +160,6 @@ export class SpeechToText extends LitElement {
   }
 
   public async startSpeechToText() {
-    console.log("this.localOrCloud", this.localOrCloud)
     if (this.localOrCloud === "cloud") {
       try {
         this.recog!.startContinuousRecognitionAsync();
