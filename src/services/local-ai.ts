@@ -16,6 +16,7 @@ self.onmessage = async (e) => {
     }
     else if (e.data.type === "load") {
         await loadTranscriber();
+        return Promise.resolve();
     }
     else {
         console.error('Unknown message type', e.data);
@@ -31,6 +32,9 @@ export async function loadTranscriber(): Promise<void> {
             env.allowLocalModels = false;
             transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-base.en');
 
+            resolve();
+        }
+        else {
             resolve();
         }
     })
@@ -53,7 +57,7 @@ export async function localTranscribe(audio: any): Promise<string> {
 }
 
 // Storage for chunks to be processed. Initialise with an empty chunk.
-let chunks_to_process = [
+const chunks_to_process = [
     {
         tokens: [],
         finalised: false,
@@ -87,7 +91,7 @@ function callback_function(item: any) {
         transcriber.processor.feature_extractor.config.chunk_length /
         transcriber.model.config.max_source_positions;
 
-    let last: any = chunks_to_process[chunks_to_process.length - 1];
+    const last: any = chunks_to_process[chunks_to_process.length - 1];
 
     // Update tokens of last chunk
     last.tokens = [...item[0].output_token_ids];
@@ -96,7 +100,7 @@ function callback_function(item: any) {
 
     // Merge text chunks
     // TODO optimise so we don't have to decode all chunks every time
-    let data = transcriber.tokenizer._decode_asr(chunks_to_process, {
+    const data = transcriber.tokenizer._decode_asr(chunks_to_process, {
         time_precision: time_precision,
         return_timestamps: true,
         force_full_sequences: false,

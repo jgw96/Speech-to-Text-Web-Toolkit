@@ -2,14 +2,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
-import { MediaRecorder as SpecialRecorder, register } from 'extendable-media-recorder';
-import { connect } from 'extendable-media-recorder-wav-encoder';
-import { loadTranscriber } from './services/ai';
-
-/*
-  TODO: Fix importing of speech-sdk, which would also fix types
-*/
-
 @customElement('speech-to-text')
 export class SpeechToText extends LitElement {
   static override styles = css`
@@ -17,7 +9,7 @@ export class SpeechToText extends LitElement {
   `;
 
   // for azure speech recog library
-  @property({ type: String }) apiKey = 'a3484733425e4929ae1da1f90a5f0a16';
+  @property({ type: String }) apiKey = '';
   @property({ type: String }) region = 'eastus';
   @property({ type: String }) language = 'en-US';
 
@@ -26,7 +18,7 @@ export class SpeechToText extends LitElement {
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  @state() private sdk: any = window.SpeechSDK;
+  @state() private sdk: any | undefined = undefined;
 
   audioConfig: any | undefined = undefined;
   speechConfig: any | undefined = undefined;
@@ -50,6 +42,12 @@ export class SpeechToText extends LitElement {
   override async firstUpdated() {
     switch (this.localOrCloud) {
       case "cloud":
+        if (!this.apiKey || this.apiKey.length === 0) {
+          throw new Error("Azure Speech API Key is required");
+        }
+
+        this.sdk = await import("microsoft-cognitiveservices-speech-sdk");
+
         if (this.sdk) {
           this.audioConfig = this.sdk.AudioConfig.fromDefaultMicrophoneInput();
           this.speechConfig = this.sdk.SpeechConfig.fromSubscription(this.apiKey, this.region);
@@ -63,8 +61,11 @@ export class SpeechToText extends LitElement {
         }
         break;
       case "local":
-        await loadTranscriber();
-        break;
+        {
+          const { loadTranscriber } = await import('./services/ai');
+          await loadTranscriber();
+          break;
+        }
       case "automatic":
 
         break;
@@ -185,9 +186,12 @@ export class SpeechToText extends LitElement {
 
       const options = { mimeType: mime };
 
+      const { register, MediaRecorder } = await import('extendable-media-recorder');
+      const { connect } = await import('extendable-media-recorder-wav-encoder');
+
       await register(await connect());
 
-      this.mediaRecorder = (new SpecialRecorder(stream, options) as any);
+      this.mediaRecorder = (new MediaRecorder(stream, options) as any);
 
       this.mediaRecorder!.ondataavailable = (event: any) => {
         if (event.data.size > 0) {
