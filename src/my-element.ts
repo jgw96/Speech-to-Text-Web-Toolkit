@@ -74,7 +74,7 @@ export class SpeechToText extends LitElement {
           const deviceMemory = navigator.deviceMemory;
           // @ts-ignore
           const battery = await navigator.getBattery();
-          
+
           const localCheck = deviceMemory && deviceMemory >= 4 && battery && battery.level > 0.5;
 
           if (localCheck) {
@@ -85,12 +85,12 @@ export class SpeechToText extends LitElement {
             if (this.sdk) {
               this.audioConfig = this.sdk.AudioConfig.fromDefaultMicrophoneInput();
               this.speechConfig = this.sdk.SpeechConfig.fromSubscription(this.apiKey, this.region);
-    
+
               this.speechConfig!.speechRecognitionLanguage = this.language;
               this.speechConfig!.enableDictation();
-    
+
               this.recog = new this.sdk.SpeechRecognizer(this.speechConfig, this.audioConfig);
-    
+
               await this.setUpListeners();
             }
             else {
@@ -210,16 +210,18 @@ export class SpeechToText extends LitElement {
         audio: true
       });
 
-      const mime = 'audio/wav';
+      if (!this.mediaRecorder) {
+        const { register, MediaRecorder } = await import('extendable-media-recorder');
+        const { connect } = await import('extendable-media-recorder-wav-encoder');
 
-      const options = { mimeType: mime };
+        const mime = 'audio/wav';
 
-      const { register, MediaRecorder } = await import('extendable-media-recorder');
-      const { connect } = await import('extendable-media-recorder-wav-encoder');
+        const options = { mimeType: mime };
 
-      await register(await connect());
+        await register(await connect());
 
-      this.mediaRecorder = (new MediaRecorder(stream, options) as any);
+        this.mediaRecorder = (new MediaRecorder(stream, options) as any);
+      }
 
       this.mediaRecorder!.ondataavailable = (event: any) => {
         if (event.data.size > 0) {
@@ -229,6 +231,8 @@ export class SpeechToText extends LitElement {
 
       this.mediaRecorder!.onstop = async () => {
         const blob = new Blob(this.recordedChunks, { type: "audio/wav" });
+
+        this.recordedChunks = [];
 
         const { doLocalWhisper } = await import('./services/ai');
         const transcript = await doLocalWhisper(blob);

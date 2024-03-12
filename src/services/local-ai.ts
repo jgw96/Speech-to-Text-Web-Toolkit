@@ -20,8 +20,7 @@ self.onmessage = async (e) => {
         await loadTranscriber();
         return Promise.resolve();
     }
-    else {
-        console.error('Unknown message type', e.data);s
+    else { 
         return Promise.reject('Unknown message type');
     }
 }
@@ -30,8 +29,12 @@ export async function loadTranscriber(): Promise<void> {
     return new Promise(async (resolve) => {
         if (!transcriber) {
             const { pipeline, env } = await import('@xenova/transformers');
+            env.backends.onnx.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.1/dist/';
+            env.backends.onnx.wasm.numThreads = 1;
             env.allowLocalModels = false;
-            transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-base.en');
+            transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-base.en', {
+                device: "webgpu"
+            });
 
             resolve();
         }
@@ -69,8 +72,6 @@ const chunks_to_process = [
 
 function chunk_callback(chunk: any) {
     let last = chunks_to_process[chunks_to_process.length - 1];
-
-    console.log("chunk_callback", chunk)
 
     // Overwrite last chunk with new info
     Object.assign(last, chunk);
