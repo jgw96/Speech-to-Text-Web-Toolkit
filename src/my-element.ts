@@ -138,7 +138,8 @@ export class SpeechToText extends LitElement {
 
           this.dispatchEvent(new CustomEvent('recognized-interim', {
             detail: {
-              message: this.lines.join(' ')
+              message: this.transcript,
+              complete_message: this.lines.join(' ')
             }
           }));
         }
@@ -159,7 +160,8 @@ export class SpeechToText extends LitElement {
 
           this.dispatchEvent(new CustomEvent('recognized', {
             detail: {
-              message: this.lines.join(' ')
+              message: this.focusedLine,
+              complete_message: this.lines.join(' ')
             }
           }));
         }
