@@ -11,9 +11,11 @@
   <script type="module" src="https://unpkg.com/@fluentui/web-components"></script>
 
   <style>
-    html, body {
+    html,
+    body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     }
+
     main {
       display: flex;
       flex-direction: column-reverse;
@@ -65,6 +67,7 @@
         transform: translateY(-10px);
         opacity: 0;
       }
+
       100% {
         transform: translateY(0);
         opacity: 1;
@@ -82,15 +85,20 @@
     <speech-to-text localOrCloud="local" apiKey="">
       <fluent-button appearance="accent" id="start-button">Start</fluent-button>
       <fluent-button id="stop-button">Stop</fluent-button>
+
+      <fluent-button id="file-button">Transcribe File</fluent-button>
     </speech-to-text>
 
-    <p id="instruct">Press Start and then start speaking, when you are done press Stop and your speech will be transcribed</p>
+    <p id="instruct">Press Start and then start speaking, when you are done press Stop and your speech will be
+      transcribed</p>
     <fluent-text-area></fluent-text-area>
   </main>
 
   <script type="module">
     document.querySelector('#start-button').addEventListener('click', startRecording);
     document.querySelector('#stop-button').addEventListener('click', stopRecording);
+
+    document.querySelector("#file-button").addEventListener('click', transcribeFile)
 
     const speechToText = document.querySelector('speech-to-text');
 
@@ -127,6 +135,29 @@
 
       const recordingButton = document.querySelector('#start-button');
       recordingButton.disabled = false;
+    }
+
+    async function transcribeFile() {
+      const pickerOpts = {
+        types: [
+          {
+            description: "Audio",
+            accept: {
+              "audio/*": [".wav"],
+            },
+          },
+        ],
+        excludeAcceptAllOption: true,
+        multiple: false,
+      };
+      // Open file picker and destructure the result the first handle
+      const [fileHandle] = await window.showOpenFilePicker(pickerOpts);
+
+      // get file contents
+      const fileData = await fileHandle.getFile();
+
+      const speechToText = document.querySelector('speech-to-text');
+      speechToText.transcribeFile(fileData);
     }
   </script>
 </body>

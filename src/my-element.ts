@@ -271,6 +271,22 @@ export class SpeechToText extends LitElement {
       this.mediaRecorder!.stop();
     }
   }
+
+  public async transcribeFile(file: Blob) {
+    try {
+      const { doLocalWhisper } = await import('./services/ai');
+      const transcript = await doLocalWhisper(file, this.model);
+
+      this.dispatchEvent(new CustomEvent('recognized', {
+        detail: {
+          message: transcript
+        }
+      }));
+    }
+    catch(err) {
+      throw new Error(`Error transcribing file: ${err}`)
+    }
+  }
 }
 
 declare global {
