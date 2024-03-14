@@ -107,4 +107,9 @@ function callback_function(item: any) {
     });
 
     console.log("callback_function", data);
+
+    self.postMessage({
+        type: 'transcribe-interim',
+        transcription: data[0]
+    });
 }

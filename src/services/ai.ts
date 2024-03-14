@@ -43,6 +43,13 @@ export function doLocalWhisper(audioFile: Blob, model: "tiny" | "base") {
 
                     resolve(e.data.transcription);
                 }
+                else if (e.data.type === "transcribe-interim") {
+                    window.dispatchEvent(new CustomEvent('interim-transcription', {
+                        detail: {
+                            message: e.data.transcription
+                        }
+                    }));
+                }
             }
 
             whisperWorker.postMessage({

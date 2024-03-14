@@ -82,7 +82,7 @@
   </div>
 
   <main>
-    <speech-to-text localOrCloud="local" apiKey="">
+    <speech-to-text localOrCloud="local">
       <fluent-button appearance="accent" id="start-button">Start</fluent-button>
       <fluent-button id="stop-button">Stop</fluent-button>
 
@@ -98,7 +98,13 @@
     document.querySelector('#start-button').addEventListener('click', startRecording);
     document.querySelector('#stop-button').addEventListener('click', stopRecording);
 
-    document.querySelector("#file-button").addEventListener('click', transcribeFile)
+    document.querySelector("#file-button").addEventListener('click', transcribeFile);
+
+    window.addEventListener("interim-transcription", (e) => {
+      console.log('interim-transcription', e.detail);
+
+      document.querySelector('fluent-text-area').value = e.detail.message;
+    });
 
     const speechToText = document.querySelector('speech-to-text');
 
