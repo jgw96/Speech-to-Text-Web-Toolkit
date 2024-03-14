@@ -1,4 +1,4 @@
-import { AutomaticSpeechRecognitionPipeline } from '@xenova/transformers';
+import { AutomaticSpeechRecognitionPipeline, pipeline, env } from '@xenova/transformers';
 
 let transcriber: AutomaticSpeechRecognitionPipeline | undefined = undefined;
 
@@ -28,7 +28,6 @@ self.onmessage = async (e) => {
 export async function loadTranscriber(): Promise<void> {
     return new Promise(async (resolve) => {
         if (!transcriber) {
-            const { pipeline, env } = await import('@xenova/transformers');
             env.backends.onnx.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.1/dist/';
             env.backends.onnx.wasm.numThreads = 1;
             env.allowLocalModels = false;

@@ -1,10 +1,10 @@
 let whisperWorker: Worker;
 
 // @ts-ignore
-import WhisperWorker from './local-ai?worker&url'
+import WhisperWorker from './local-ai?worker&inline'
 
 export async function loadTranscriber(): Promise<void> {
-    whisperWorker = new Worker(WhisperWorker, { type: "module" });
+    whisperWorker = new WhisperWorker();
     whisperWorker.postMessage({
         type: "load",
     });
