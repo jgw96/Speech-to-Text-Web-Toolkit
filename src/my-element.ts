@@ -15,6 +15,7 @@ export class SpeechToText extends LitElement {
 
   // control props
   @property({ type: String }) localOrCloud: "local" | "cloud" | "automatic" = "cloud";
+  @property({ type: String }) model: "tiny" | "base" = "tiny";
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
@@ -63,7 +64,7 @@ export class SpeechToText extends LitElement {
       case "local":
         {
           const { loadTranscriber } = await import('./services/ai');
-          await loadTranscriber();
+          await loadTranscriber(this.model);
           break;
         }
       case "automatic":
@@ -79,7 +80,7 @@ export class SpeechToText extends LitElement {
 
           if (localCheck) {
             const { loadTranscriber } = await import('./services/ai');
-            await loadTranscriber();
+            await loadTranscriber(this.model);
           }
           else {
             if (this.sdk) {
@@ -237,7 +238,7 @@ export class SpeechToText extends LitElement {
         this.recordedChunks = [];
 
         const { doLocalWhisper } = await import('./services/ai');
-        const transcript = await doLocalWhisper(blob);
+        const transcript = await doLocalWhisper(blob, this.model);
 
         this.dispatchEvent(new CustomEvent('recognized', {
           detail: {

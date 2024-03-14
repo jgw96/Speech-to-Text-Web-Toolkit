@@ -7,13 +7,86 @@
   <title>Lit Starter Kit</title>
 
   <script src="./src/my-element.ts" type="module"></script>
+
+  <script type="module" src="https://unpkg.com/@fluentui/web-components"></script>
+
+  <style>
+    html, body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+    main {
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      height: 80vh;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    fluent-text-area::part(control) {
+      height: 40vh;
+      width: 80vw;
+    }
+
+    #recording-bar {
+      display: none;
+
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      top: 11vh;
+      left: 0;
+      right: 0;
+      font-family: sans-serif;
+      font-weight: bold;
+      font-size: 14px;
+
+      animation: quickdown 0.3s;
+    }
+
+    #recording-bar p {
+      min-width: 8em;
+      background: #036ac4;
+      color: white;
+      border-radius: 20px;
+      padding: 10px;
+      font-size: 12px;
+      text-align: center;
+
+      box-shadow: 0px 2px 6px 0px #0000007a;
+    }
+
+    #instruct {
+      font-size: 12px;
+    }
+
+    @keyframes quickdown {
+      0% {
+        transform: translateY(-10px);
+        opacity: 0;
+      }
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
 </head>
 
 <body>
-  <speech-to-text localOrCloud="local" apiKey="">
-    <button id="start-button">Start</button>
-    <button id="stop-button">Stop</button>
-  </speech-to-text>
+  <div id="recording-bar">
+    <p>Recording...</p>
+  </div>
+
+  <main>
+    <speech-to-text localOrCloud="local" apiKey="">
+      <fluent-button appearance="accent" id="start-button">Start</fluent-button>
+      <fluent-button id="stop-button">Stop</fluent-button>
+    </speech-to-text>
+
+    <p id="instruct">Press Start and then start speaking, when you are done press Stop and your speech will be transcribed</p>
+    <fluent-text-area></fluent-text-area>
+  </main>
 
   <script type="module">
     document.querySelector('#start-button').addEventListener('click', startRecording);
@@ -21,18 +94,39 @@
 
     const speechToText = document.querySelector('speech-to-text');
 
+    let lines = [];
+
     speechToText.addEventListener('recognized', (e) => {
-      console.log('recognized', e.detail);
+      console.log('recognized', e.detail.message);
+      if (e.detail.complete_message) {
+        document.querySelector('fluent-text-area').value = e.detail.complete_message;
+      }
+      else {
+        lines.push(e.detail.message);
+        document.querySelector('fluent-text-area').value = lines.join('\n');
+      }
     });
 
     function startRecording() {
       console.log('startRecording');
       speechToText.startSpeechToText();
+
+      const recordingBar = document.querySelector('#recording-bar');
+      recordingBar.style.display = 'flex';
+
+      const recordingButton = document.querySelector('#start-button');
+      recordingButton.disabled = true;
     }
 
     function stopRecording() {
       console.log('stopRecording');
       speechToText.stopSpeechToText();
+
+      const recordingBar = document.querySelector('#recording-bar');
+      // recordingBar.style.display = 'none';
+
+      const recordingButton = document.querySelector('#start-button');
+      recordingButton.disabled = false;
     }
   </script>
 </body>

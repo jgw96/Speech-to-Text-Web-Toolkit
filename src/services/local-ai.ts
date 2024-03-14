@@ -6,7 +6,7 @@ self.onmessage = async (e) => {
     if (e.data.type === 'transcribe') {
         return new Promise((resolve) => {
             console.log("in worker", e.data)
-            localTranscribe(e.data.blob).then((transcription) => {
+            localTranscribe(e.data.blob, e.data.model).then((transcription) => {
                 console.log("in worker", transcription)
                 self.postMessage({
                     type: 'transcribe',
@@ -17,7 +17,7 @@ self.onmessage = async (e) => {
         })
     }
     else if (e.data.type === "load") {
-        await loadTranscriber();
+        await loadTranscriber(e.data.model || "tiny");
         return Promise.resolve();
     }
     else { 
@@ -25,13 +25,13 @@ self.onmessage = async (e) => {
     }
 }
 
-export async function loadTranscriber(): Promise<void> {
+export async function loadTranscriber(model: "tiny" | "base"): Promise<void> {
     return new Promise(async (resolve) => {
         if (!transcriber) {
             env.backends.onnx.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.17.1/dist/';
             env.backends.onnx.wasm.numThreads = 1;
             env.allowLocalModels = false;
-            transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-base.en', {
+            transcriber = await pipeline('automatic-speech-recognition', `Xenova/whisper-${model}.en`, {
                 device: "webgpu"
             });
 
@@ -43,9 +43,9 @@ export async function loadTranscriber(): Promise<void> {
     })
 }
 
-export async function localTranscribe(audio: Blob): Promise<string> {
+export async function localTranscribe(audio: Blob, model: "tiny" | "base"): Promise<string> {
     return new Promise(async (resolve) => {
-        await loadTranscriber();
+        await loadTranscriber(model);
 
         const output = await transcriber(audio, {
             chunk_length_s: 30,

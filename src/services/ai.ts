@@ -3,14 +3,15 @@ let whisperWorker: Worker;
 // @ts-ignore
 import WhisperWorker from './local-ai?worker&inline'
 
-export async function loadTranscriber(): Promise<void> {
+export async function loadTranscriber(model: "tiny" | "base"): Promise<void> {
     whisperWorker = new WhisperWorker();
     whisperWorker.postMessage({
         type: "load",
+        model: model || "tiny",
     });
 }
 
-export function doLocalWhisper(audioFile: Blob) {
+export function doLocalWhisper(audioFile: Blob, model: "tiny" | "base") {
     return new Promise((resolve) => {
         const fileReader = new FileReader();
         fileReader.onloadend = async () => {
@@ -47,6 +48,7 @@ export function doLocalWhisper(audioFile: Blob) {
             whisperWorker.postMessage({
                 type: "transcribe",
                 blob: audio,
+                model: model || "tiny",
             })
 
         };
