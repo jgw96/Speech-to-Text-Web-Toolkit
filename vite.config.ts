@@ -10,16 +10,17 @@ export default defineConfig({
   server: {
     open: 'index.html',
   },
+  optimizeDeps: {
+    esbuildOptions: {
+      target: "es2022",
+    }
+  },
   build: {
     sourcemap: false,
     assetsDir: "code",
-    minify: "terser",
     cssMinify: true,
-    target: ["edge118", "firefox116", "chrome118", "safari16" ],
-    lib: {
-        entry: "src/my-element.ts",
-        formats: ["es"] 
-    },
+    target: "esnext",
+    
     rollupOptions: {
       output: {
         format: "es",

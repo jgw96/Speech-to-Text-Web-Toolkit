@@ -6,7 +6,7 @@
   "module": "dist/speech-to-text-toolkit.js",
   "type": "module",
   "scripts": {
-    "dev-server": "vite --open",
+    "dev-server": "vite --open -c vite.config.ts",
     "dev": "npm run dev-server",
     "build": "vite build",
     "build:watch": "tsc --watch",
