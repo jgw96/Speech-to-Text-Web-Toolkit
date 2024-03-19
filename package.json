@@ -1,6 +1,6 @@
 {
   "name": "speech-to-text-toolkit",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A web component that a developer can use to enable accurate speech-to-text, either locally or in the cloud, in their web-based application, including a WebView. ",
   "main": "dist/speech-to-text-toolkit.js",
   "module": "dist/speech-to-text-toolkit.js",

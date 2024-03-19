@@ -20,7 +20,10 @@ export default defineConfig({
     assetsDir: "code",
     cssMinify: true,
     target: "esnext",
-    
+    lib: {
+      entry: "src/my-element.ts",
+      formats: ["es"] 
+    },
     rollupOptions: {
       output: {
         format: "es",
