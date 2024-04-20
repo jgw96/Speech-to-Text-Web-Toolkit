@@ -1,4 +1,5 @@
-import { AutomaticSpeechRecognitionPipeline, pipeline } from '@xenova/transformers';
+/* eslint-disable no-async-promise-executor */
+import { AutomaticSpeechRecognitionPipeline, pipeline, env } from '@xenova/transformers';
 
 let transcriber: AutomaticSpeechRecognitionPipeline | undefined = undefined;
 
@@ -20,7 +21,7 @@ self.onmessage = async (e) => {
         await loadTranscriber(e.data.model || "tiny");
         return Promise.resolve();
     }
-    else { 
+    else {
         return Promise.reject('Unknown message type');
     }
 }
@@ -28,9 +29,9 @@ self.onmessage = async (e) => {
 export async function loadTranscriber(model: "tiny" | "base"): Promise<void> {
     return new Promise(async (resolve) => {
         if (!transcriber) {
-            transcriber = await pipeline('automatic-speech-recognition', `Xenova/whisper-${model}.en`, {
-                device: "webgpu"
-            });
+            env.allowLocalModels = false;
+            env.allowRemoteModels = true;
+            transcriber = await pipeline('automatic-speech-recognition', `distil-whisper/distil-small.en`);
 
             resolve();
         }
@@ -41,17 +42,22 @@ export async function loadTranscriber(model: "tiny" | "base"): Promise<void> {
 }
 
 export async function localTranscribe(audio: Blob, model: "tiny" | "base"): Promise<string> {
-    return new Promise(async (resolve) => {
+    return new Promise(async (resolve, reject) => {
         await loadTranscriber(model);
 
-        const output = await transcriber(audio, {
-            chunk_length_s: 30,
-            stride_length_s: 5,
-            callback_function: callback_function, // after each generation step
-            chunk_callback: chunk_callback, // after each chunk is processed
-        });
+        if (transcriber) {
+            const output = await transcriber(audio, {
+                chunk_length_s: 30,
+                stride_length_s: 5,
+                callback_function: callback_function, // after each generation step
+                chunk_callback: chunk_callback, // after each chunk is processed
+            });
 
-        resolve(output.text);
+            resolve(output.text);
+        }
+        else {
+            reject();
+        }
     })
 }
 
@@ -66,8 +72,8 @@ const chunks_to_process = [
 // TODO: Storage for fully-processed and merged chunks
 // let decoded_chunks = [];
 
-function chunk_callback(chunk: any) {
-    let last = chunks_to_process[chunks_to_process.length - 1];
+function chunk_callback(chunk) {
+    const last = chunks_to_process[chunks_to_process.length - 1];
 
     // Overwrite last chunk with new info
     Object.assign(last, chunk);
@@ -88,7 +94,7 @@ function callback_function(item: any) {
         transcriber.processor.feature_extractor.config.chunk_length /
         transcriber.model.config.max_source_positions;
 
-    const last: any = chunks_to_process[chunks_to_process.length - 1];
+    const last = chunks_to_process[chunks_to_process.length - 1];
 
     // Update tokens of last chunk
     last.tokens = [...item[0].output_token_ids];

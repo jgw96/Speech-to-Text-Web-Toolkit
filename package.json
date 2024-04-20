@@ -1,6 +1,6 @@
 {
   "name": "speech-to-text-toolkit",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "A web component that a developer can use to enable accurate speech-to-text, either locally or in the cloud, in their web-based application, including a WebView. ",
   "main": "dist/speech-to-text-toolkit.js",
   "module": "dist/speech-to-text-toolkit.js",
@@ -42,7 +42,7 @@
   "author": "Justin Willis",
   "license": "BSD-3-Clause",
   "dependencies": {
-    "@xenova/transformers": "github:xenova/transformers.js#v3",
+    "@xenova/transformers": "^2.17.1",
     "extendable-media-recorder": "^9.1.11",
     "extendable-media-recorder-wav-encoder": "^7.0.106",
     "lit": "^3.1.2",
